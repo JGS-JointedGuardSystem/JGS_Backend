@@ -53,7 +53,7 @@ app.post("/sign", (req, res) => {
         }
         //중복이면 return
         if (results.length > 0) {
-            res.sendStatus(202);
+            res.status(400).send('User ID Conflict')
             return;
         } else {//중복 아니면 DB에 ID,PW등록
             connection.query(`INSERT INTO user (id, pw) VALUES (?,?);`, [id, pw], (insert_error, insert_results) => {
