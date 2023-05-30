@@ -1,20 +1,33 @@
 require("dotenv").config();
 const dbsettings = require('./var.js');
 const mysql = require('mysql');
-const http = require("http");
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const bodyParser = require("body-parser");
+const fs = require('fs');
+const cors = require('cors')
 //const { request } = require("../session-practice/db");
 
 require('console-stamp')(console, 'yyyy/mm/dd HH:MM:ss.l');
 
-const app = express();
-const server = http.createServer(app);
-const PORT = 8080;
+const options = {
+    key: fs.readFileSync('./privkey.pem'),
+    cert: fs.readFileSync('./cert.pem')
+};  
 
+const app = express();
+
+
+const http_port = 80
+const https_port = 443
+
+app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+const http = require('http').createServer(app)
+const https = require('https').createServer(options, app);
+const io = require('socket.io')(https)
 
 const connection = mysql.createConnection({
     host: dbsettings.host,
@@ -140,6 +153,14 @@ app.get("/user", authenticateAccessToken, (req, res) => {
     res.sendStatus(200);
 });
 
-server.listen(PORT, () => {
-    console.log(`Server running on ${PORT}`);
+io.on('connection', socket => {
+    console.log('Socket.IO Connected:', socket.id)
+})
+
+http.listen(http_port, () => {
+    console.log(`Listening to port ${http_port}`);
 });
+
+https.listen(https_port, () => {
+    console.log(`Listening to port ${https_port}`)
+})
