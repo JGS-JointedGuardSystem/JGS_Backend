@@ -143,7 +143,7 @@ app.post("/refresh", (req, res) => {
 
             const accessToken = generateAccessToken(user.id);
 
-            res.json({ accessToken });
+            res.json({ accessToken, refreshToken});
         }
     );
 });
@@ -165,12 +165,24 @@ frontend.on('connection', socket => {
         //Application과 Frontend에 현재 상태 DB 넘기기
         connection.query(`SELECT * FROM device_data WHERE user_id = ?;`, [user_id],function (error, results) {
             if (error) {
-                console.log('SELECT * FROM device_data WHERE user_id = ?');
+                console.log('SELECT * FROM device_data error');
                 console.log(error);
                 return;
             }
             console.log(results);
             frontend.emit('Send_Coord', results)
+        });
+    })
+    socket.on('Add_Device', request_data => {
+        const { user_id, device_no, latitude, longtitude, type } = request_data;
+        connection.query(`INSERT INTO device_data (user_id, device_no, latitude, longtitude, type) VALUES (?, ?, ?, ?, ?);`, [user_id, device_no, latitude, longtitude, type], (error, results) => {
+            if (error) {
+                console.log('INSERT INTO device_data error:');
+                console.log(error);
+                return;
+            }
+            console.log(results);
+            console.log('device_data insert Success')
         });
     })
 })
