@@ -175,7 +175,7 @@ frontend.on('connection', socket => {
     })
     socket.on('Add_Device', request_data => {
         const { user_id, device_no, latitude, longtitude, type } = request_data;
-        connection.query(`INSERT INTO device_data (user_id, device_no, latitude, longtitude, type) VALUES (?, ?, ?, ?, ?);`, [user_id, device_no, latitude, longtitude, type], (error, results) => {
+        connection.query(`INSERT INTO device_data (user_id, device_no, latitude, longitude, type) VALUES (?, ?, ?, ?, ?);`, [user_id, device_no, latitude, longtitude, type], (error, results) => {
             if (error) {
                 console.log('INSERT INTO device_data error:');
                 console.log(error);
