@@ -185,6 +185,18 @@ frontend.on('connection', socket => {
             console.log('device_data insert Success')
         });
     })
+    socket.on('Remove_Device', request_data => {
+        const { user_id, device_no } = request_data;
+        connection.query(`DELETE FROM device_data WHERE user_id = ? AND device_no = ?;`, [user_id, device_no], (error, results) => {
+            if (error) {
+                console.log('DELETE FROM device_data error:');
+                console.log(error);
+                return;
+            }
+            console.log(results);
+            console.log('device_data delete Success')
+        });
+    })
 })
 
 http.listen(http_port, () => {
