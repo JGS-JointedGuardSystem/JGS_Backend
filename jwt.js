@@ -174,8 +174,8 @@ frontend.on('connection', socket => {
         });
     })
     socket.on('Add_Device', request_data => {
-        const { user_id, device_no, latitude, longtitude, device_type } = request_data;
-        connection.query(`INSERT INTO device_data (user_id, device_no, latitude, longitude, device_type, curr_status) VALUES (?, ?, ?, ?, ?, ?);`, [user_id, device_no, latitude, longtitude, device_type, "0"], (error, results) => {
+        const { user_id, device_no, latitude, longitude, device_type } = request_data;
+        connection.query(`INSERT INTO device_data (user_id, device_no, latitude, longitude, device_type, curr_status) VALUES (?, ?, ?, ?, ?, ?);`, [user_id, device_no, latitude, longitude, device_type, "0"], (error, results) => {
             if (error) {
                 console.log('INSERT INTO device_data error:');
                 console.log(error);
