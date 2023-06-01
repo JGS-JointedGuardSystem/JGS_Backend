@@ -158,7 +158,7 @@ io.on('connection', socket => {
     console.log('Socket.IO Connected(Embedded):', socket.id)
 })
 
-frontend.on('frontend', socket => {
+frontend.on('connection', socket => {
     console.log('Socket.IO Connected(frontend):', socket.id)
     socket.on('request_data_all', request_data => {
         const { id } = request_data;
