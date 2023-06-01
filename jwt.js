@@ -28,6 +28,7 @@ app.use(bodyParser.json());
 const http = require('http').createServer(app)
 const https = require('https').createServer(options, app);
 const io = require('socket.io')(https)
+const frontend = io.of('/frontend');
 
 const connection = mysql.createConnection({
     host: dbsettings.host,
@@ -154,7 +155,24 @@ app.get("/user", authenticateAccessToken, (req, res) => {
 });
 
 io.on('connection', socket => {
-    console.log('Socket.IO Connected:', socket.id)
+    console.log('Socket.IO Connected(Embedded):', socket.id)
+})
+
+frontend.on('frontend', socket => {
+    console.log('Socket.IO Connected(frontend):', socket.id)
+    socket.on('request_data_all', request_data => {
+        const { id } = request_data;
+        //Application과 Frontend에 현재 상태 DB 넘기기
+        connection.query(`SELECT * FROM device_data WHERE user_id = ?;`, [id],function (error, results) {
+            if (error) {
+                console.log('SELECT * FROM device_data WHERE user_id = ?');
+                console.log(error);
+                return;
+            }
+            console.log(results);
+            frontend.emit('device_data_all', results)
+        });
+    })
 })
 
 http.listen(http_port, () => {
