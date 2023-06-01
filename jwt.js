@@ -170,7 +170,7 @@ frontend.on('connection', socket => {
                 return;
             }
             console.log(results);
-            frontend.emit('device_data_all', results)
+            frontend.emit('Send_Coord', results)
         });
     })
 })
