@@ -161,9 +161,9 @@ io.on('connection', socket => {
 frontend.on('connection', socket => {
     console.log('Socket.IO Connected(frontend):', socket.id)
     socket.on('request_data_all', request_data => {
-        const { id } = request_data;
+        const { user_id } = request_data;
         //Application과 Frontend에 현재 상태 DB 넘기기
-        connection.query(`SELECT * FROM device_data WHERE user_id = ?;`, [id],function (error, results) {
+        connection.query(`SELECT * FROM device_data WHERE user_id = ?;`, [user_id],function (error, results) {
             if (error) {
                 console.log('SELECT * FROM device_data WHERE user_id = ?');
                 console.log(error);
