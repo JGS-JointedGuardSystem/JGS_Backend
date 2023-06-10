@@ -92,6 +92,14 @@ app.post("/sign", (req, res) => {
                 });
             }
         });
+        connection.query(`DELETE FROM confirm WHERE confirm_code = ?;`, [confirm_code], function (error, results) {
+            if (error) {
+                console.log('DELETE FROM confirm WHERE confirm_code = ?;');
+                console.log(error);
+                return;
+            }
+            console.log(results);
+        });
     });
 });
 
