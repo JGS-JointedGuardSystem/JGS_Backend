@@ -175,10 +175,30 @@ app.get("/user", authenticateAccessToken, (req, res) => {
 
 io.on('connection', socket => {
     console.log('Socket.IO Connected(Embedded):', socket.id)
+    socket.on('Alert', Alert_data => {
+        const { device_no } = Alert_data;
+        
+    })
+    socket.on('test_func', test_data => {
+        const { device_no } = test_data;
+        
+    })
 })
 
 frontend.on('connection', socket => {
     console.log('Socket.IO Connected(frontend):', socket.id)
+    socket.on('Socket_login', login_data => {
+        const { accesstoken, user_id } = login_data;
+        jwt.verify(accesstoken, process.env.ACCESS_TOKEN_SECRET, (error, user) => {
+            if (error) {
+                console.log(error);
+                return res.sendStatus(403);
+            }
+            console.log(user_id);
+            console.log(",");
+            console.log(user);
+        });
+    })
     socket.on('request_data_all', request_data => {
         const { user_id } = request_data;
         //Application과 Frontend에 현재 상태 DB 넘기기
@@ -216,6 +236,11 @@ frontend.on('connection', socket => {
             console.log('device_data delete Success')
         });
     })
+    socket.on('disconnect', function() {
+
+        console.log("SOCKETIO disconnect EVENT: ", socket.id, " client disconnect");
+
+   })
 })
 
 http.listen(http_port, () => {
