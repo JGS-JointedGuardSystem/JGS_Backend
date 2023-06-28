@@ -80,6 +80,14 @@ app.post("/sign", (req, res) => {
                 res.status(400).send('중복된 아이디입니다.')
                 return;
             } else {//중복 아니면 DB에 ID,PW등록
+                connection.query(`DELETE FROM confirm WHERE confirm_code = ?;`, [confirm_code], function (error, results) {
+                    if (error) {
+                        console.log('DELETE FROM confirm WHERE confirm_code = ?;');
+                        console.log(error);
+                        return;
+                    }
+                    console.log(results);
+                });
                 connection.query(`INSERT INTO user (id, pw) VALUES (?,?);`, [id, pw], (insert_error, insert_results) => {
                     if (insert_error) {
                         console.log('User Insert Error');
@@ -92,14 +100,7 @@ app.post("/sign", (req, res) => {
                 });
             }
         });
-        connection.query(`DELETE FROM confirm WHERE confirm_code = ?;`, [confirm_code], function (error, results) {
-            if (error) {
-                console.log('DELETE FROM confirm WHERE confirm_code = ?;');
-                console.log(error);
-                return;
-            }
-            console.log(results);
-        });
+        
     });
 });
 
