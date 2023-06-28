@@ -118,7 +118,7 @@ app.post("/login", (req, res) => {
         }
         console.log(results);
         if (results.length < 1) {
-            return res.sendStatus(500);
+            res.status(500).send('비밀번호 오류입니다.')
         }
         else {
             let accessToken = generateAccessToken(results[0].id);
