@@ -177,11 +177,28 @@ app.get("/user", authenticateAccessToken, (req, res) => {
 io.on('connection', socket => {
     console.log('Socket.IO Connected(Embedded):', socket.id)
     socket.on('Alert', Alert_data => {
-        const { device_no } = Alert_data;
-        
+        const { user_id, device_no } = Alert_data;
+        connection.query(`SELECT socket_id FROM user_socketid WHERE user_id = ?;`, [user_id], function (error, results_id) {
+            if (error) {
+                console.log(error);
+            }
+            connection.query(`SELECT latitude,longitude,device_type FROM device_data WHERE user_id= ? AND device_no= ?;`, [user_id,device_no], function (error, results) {
+                console.log(results);
+                let dev_data = new Object();
+                dev_data.id = device_no;
+                dev_data.latitude = results[0].latitude;
+                dev_data.longitude = results[0].longitude;
+                dev_data.device_type = results[0].device_type;
+            for (let i = 0; i < results_id.length; i++) {
+                console.log(results_id[i].socket_id);
+                io.to(results_id[i].socket_id).emit('Alert' ,dev_data);
+            }
+            });
+            
+        });
     })
     socket.on('test_func', test_data => {
-        const { device_no } = test_data;
+        const { user_id, device_no } = test_data;
         
     })
 })
@@ -196,7 +213,17 @@ frontend.on('connection', socket => {
             }
             console.log(user_id);
             console.log(",");
-            console.log(user);
+            console.log(user);  
+            if(user.id == user_id)
+            {
+                connection.query(`INSERT INTO user_socketid (user_id, socket_id) VALUES (?,?);`, [user_id, socket.id], (insert_error, insert_results) => {
+                    if (insert_error) {
+                        console.log(insert_error);
+                        return;
+                    }
+                    console.log(insert_results);
+                });
+            }
         });
     })
     socket.on('request_data_all', request_data => {
@@ -241,6 +268,16 @@ frontend.on('connection', socket => {
         console.log("SOCKETIO disconnect EVENT: ", socket.id, " client disconnect");
 
    })
+   socket.on('disconnect', function() {
+    console.log("SOCKETIO disconnect EVENT: ", socket.id, " client disconnect");
+    connection.query(`DELETE FROM user_socketid WHERE socket_id = ?;`, [socket.id], (error, results) => {
+        if (error) {
+            console.log(error);
+            return;
+        }
+        console.log(results);
+    });
+})
 })
 
 http.listen(http_port, () => {
