@@ -191,7 +191,7 @@ io.on('connection', socket => {
                 dev_data.device_type = results[0].device_type;
             for (let i = 0; i < results_id.length; i++) {
                 console.log(results_id[i].socket_id);
-                io.to(results_id[i].socket_id).emit('Alert' ,dev_data);
+                frontend.to(results_id[i].socket_id).emit('Alert' ,dev_data);
             }
             });
             
