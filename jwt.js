@@ -27,7 +27,7 @@ app.use(bodyParser.json());
 
 const http = require('http').createServer(app)
 const https = require('https').createServer(options, app);
-const io = require('socket.io')(https)
+const io = require('socket.io')(http)
 const frontend = io.of('/frontend');
 
 const connection = mysql.createConnection({
@@ -100,7 +100,7 @@ app.post("/sign", (req, res) => {
                 });
             }
         });
-        
+
     });
 });
 
@@ -182,24 +182,24 @@ io.on('connection', socket => {
             if (error) {
                 console.log(error);
             }
-            connection.query(`SELECT latitude,longitude,device_type FROM device_data WHERE user_id= ? AND device_no= ?;`, [user_id,device_no], function (error, results) {
+            connection.query(`SELECT latitude,longitude,device_type FROM device_data WHERE user_id= ? AND device_no= ?;`, [user_id, device_no], function (error, results) {
                 console.log(results);
                 let dev_data = new Object();
                 dev_data.id = device_no;
                 dev_data.latitude = results[0].latitude;
                 dev_data.longitude = results[0].longitude;
                 dev_data.device_type = results[0].device_type;
-            for (let i = 0; i < results_id.length; i++) {
-                console.log(results_id[i].socket_id);
-                frontend.to(results_id[i].socket_id).emit('Alert' ,dev_data);
-            }
+                for (let i = 0; i < results_id.length; i++) {
+                    console.log(results_id[i].socket_id);
+                    frontend.to(results_id[i].socket_id).emit('Alert', dev_data);
+                }
             });
-            
+
         });
     })
     socket.on('test_func', test_data => {
         const { user_id, device_no } = test_data;
-        
+
     })
 })
 
@@ -213,9 +213,8 @@ frontend.on('connection', socket => {
             }
             console.log(user_id);
             console.log(",");
-            console.log(user);  
-            if(user.id == user_id)
-            {
+            console.log(user);
+            if (user.id == user_id) {
                 connection.query(`INSERT INTO user_socketid (user_id, socket_id) VALUES (?,?);`, [user_id, socket.id], (insert_error, insert_results) => {
                     if (insert_error) {
                         console.log(insert_error);
@@ -263,21 +262,17 @@ frontend.on('connection', socket => {
             console.log('device_data delete Success')
         });
     })
-    socket.on('disconnect', function() {
 
+    socket.on('disconnect', function () {
         console.log("SOCKETIO disconnect EVENT: ", socket.id, " client disconnect");
-
-   })
-   socket.on('disconnect', function() {
-    console.log("SOCKETIO disconnect EVENT: ", socket.id, " client disconnect");
-    connection.query(`DELETE FROM user_socketid WHERE socket_id = ?;`, [socket.id], (error, results) => {
-        if (error) {
-            console.log(error);
-            return;
-        }
-        console.log(results);
-    });
-})
+        connection.query(`DELETE FROM user_socketid WHERE socket_id = ?;`, [socket.id], (error, results) => {
+            if (error) {
+                console.log(error);
+                return;
+            }
+            console.log(results);
+        });
+    })
 })
 
 http.listen(http_port, () => {
