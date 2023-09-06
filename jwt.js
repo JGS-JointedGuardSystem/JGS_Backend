@@ -27,7 +27,7 @@ app.use(bodyParser.json());
 
 const http = require('http').createServer(app)
 const https = require('https').createServer(options, app);
-const io = require('socket.io')(http)
+const io = require('socket.io')(http, { cors: { origin: "*" } })
 const frontend = io.of('/frontend');
 
 const connection = mysql.createConnection({
