@@ -41,7 +41,7 @@ const connection = mysql.createConnection({
 // access token을 secret key 기반으로 생성
 const generateAccessToken = (id) => {
     return jwt.sign({ id }, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "15m",
+        expiresIn: "3 days",
     });
 };
 
@@ -114,7 +114,7 @@ app.post("/login", (req, res) => {
         if (error) {
             console.log('no matching user blyat');
             console.log(error);
-            return res.sendStatus(500);
+            return res.status(500).send('로그인 실패.');
         }
         console.log(results);
         if (results.length < 1) {
@@ -126,6 +126,83 @@ app.post("/login", (req, res) => {
             res.json({ accessToken, refreshToken });
         }
 
+    });
+});
+
+// 장치 추가
+app.post("/add_device", authenticateAccessToken, (req, res) => {
+    let user_id = req.body.user_id;
+    let name = req.body.name;
+    let device_no = req.body.device_no;
+    let latitude = req.body.latitude;
+    let longitude = req.body.longitude;
+    let device_type = req.body.device_type;
+
+    connection.query(`SELECT device_no FROM device_data WHERE device_no = ?;`, [device_no], function (error, results) {
+        if (results.length > 0) {
+            res.status(400).send('이미 추가된 장치입니다.');
+            return;
+        } else {
+            connection.query(`INSERT INTO device_data (user_id, name, device_no, latitude, longitude, device_type, curr_status) VALUES (?, ?, ?, ?, ?, ?, ?);`, [user_id, name, device_no, latitude, longitude, device_type, "0"], (error, results) => {
+                if (error) {
+                    console.log('INSERT INTO device_data error:');
+                    //console.log(error);
+                    res.status(400).send('장치 추가 실패');
+                    return;
+                }
+                //console.log(results);
+                console.log('device_data insert Success')
+                res.status(200).send('장치 추가 성공');
+            });
+        }
+    });
+});
+
+// 장치 제거
+app.post("/remove_device", authenticateAccessToken, (req, res) => {
+    let device_no = req.body.device_no;
+    connection.query(`DELETE FROM device_data WHERE user_id = ? AND device_no = ?;`, [req.user.id, device_no], (error, results) => {
+        if (error) {
+            console.log('DELETE FROM device_data error:');
+            //console.log(error);
+            res.status(400).send('장치 제거 실패');
+            return;
+        }
+        console.log('device_data delete Success')
+        res.status(200).send('장치 제거 성공');
+    });
+});
+
+// 장치 이름 변경
+app.post("/rename_device", authenticateAccessToken, (req, res) => {
+    let device_no = req.body.device_no;
+    let new_name = req.body.new_name;
+    connection.query(`UPDATE device_data SET name = ? WHERE device_no = ?;`, [new_name, device_no], (error, results) => {
+        if (error) {
+            console.log('device_data Update query error:');
+            //console.log(error);
+            res.status(400).send('장치 이름 변경 실패');
+            return;
+        }
+        console.log('device_data update success');
+        res.status(200).send('장치 이름 변경 성공');
+    });
+});
+
+// 장치 위치 변경
+app.post("/move_device", authenticateAccessToken, (req, res) => {
+    let device_no = req.body.device_no;
+    let latitude = req.body.latitude;
+    let longitude = req.body.longitude;
+    connection.query(`UPDATE device_data SET latitude = ?, longitude = ? WHERE device_no = ?;`, [latitude, longitude, device_no], (error, results) => {
+        if (error) {
+            console.log('device_data Update query error:');
+            //console.log(error);
+            res.status(400).send('장치 위치 변경 실패');
+            return;
+        }
+        console.log('device_data update success');
+        res.status(200).send('장치 위치 변경 성공');
     });
 });
 
@@ -182,9 +259,10 @@ io.on('connection', socket => {
             if (error) {
                 console.log(error);
             }
-            connection.query(`SELECT latitude,longitude,device_type FROM device_data WHERE user_id= ? AND device_no= ?;`, [user_id, device_no], function (error, results) {
+            connection.query(`SELECT name,latitude,longitude,device_type FROM device_data WHERE user_id= ? AND device_no= ?;`, [user_id, device_no], function (error, results) {
                 console.log(results);
                 let dev_data = new Object();
+                dev_data.name = results[0].name;
                 dev_data.id = device_no;
                 dev_data.latitude = results[0].latitude;
                 dev_data.longitude = results[0].longitude;
@@ -236,30 +314,6 @@ frontend.on('connection', socket => {
             }
             console.log(results);
             frontend.emit('Send_Coord', results)
-        });
-    })
-    socket.on('Add_Device', request_data => {
-        const { user_id, device_no, latitude, longitude, device_type } = request_data;
-        connection.query(`INSERT INTO device_data (user_id, device_no, latitude, longitude, device_type, curr_status) VALUES (?, ?, ?, ?, ?, ?);`, [user_id, device_no, latitude, longitude, device_type, "0"], (error, results) => {
-            if (error) {
-                console.log('INSERT INTO device_data error:');
-                console.log(error);
-                return;
-            }
-            console.log(results);
-            console.log('device_data insert Success')
-        });
-    })
-    socket.on('Remove_Device', request_data => {
-        const { user_id, device_no } = request_data;
-        connection.query(`DELETE FROM device_data WHERE user_id = ? AND device_no = ?;`, [user_id, device_no], (error, results) => {
-            if (error) {
-                console.log('DELETE FROM device_data error:');
-                console.log(error);
-                return;
-            }
-            console.log(results);
-            console.log('device_data delete Success')
         });
     })
 
