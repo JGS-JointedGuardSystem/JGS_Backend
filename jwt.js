@@ -152,7 +152,6 @@ const authenticateAccessToken = (req, res, next) => {
 
 // 장치 추가
 app.post("/add_device", authenticateAccessToken, (req, res) => {
-    let user_id = req.body.user_id;
     let name = req.body.name;
     let device_no = req.body.device_no;
     let latitude = req.body.latitude;
@@ -164,7 +163,7 @@ app.post("/add_device", authenticateAccessToken, (req, res) => {
             res.status(400).send('이미 추가된 장치입니다.');
             return;
         } else {
-            connection.query(`INSERT INTO device_data (user_id, name, device_no, latitude, longitude, device_type, curr_status) VALUES (?, ?, ?, ?, ?, ?, ?);`, [user_id, name, device_no, latitude, longitude, device_type, "0"], (error, results) => {
+            connection.query(`INSERT INTO device_data (user_id, name, device_no, latitude, longitude, device_type, curr_status) VALUES (?, ?, ?, ?, ?, ?, ?);`, [req.user.id, name, device_no, latitude, longitude, device_type, "0"], (error, results) => {
                 if (error) {
                     console.log('INSERT INTO device_data error:');
                     console.log(error);
@@ -304,16 +303,23 @@ frontend.on('connection', socket => {
         });
     })
     socket.on('request_data_all', request_data => {
-        const { user_id } = request_data;
         //Application과 Frontend에 현재 상태 DB 넘기기
-        connection.query(`SELECT * FROM device_data WHERE user_id = ?;`, [user_id], function (error, results) {
+        const { accesstoken } = login_data;
+        jwt.verify(accesstoken, process.env.ACCESS_TOKEN_SECRET, (error, user) => {
             if (error) {
-                console.log('SELECT * FROM device_data error');
                 console.log(error);
-                return;
             }
-            console.log(results);
-            frontend.emit('Send_Coord', results)
+            connection.query(`SELECT * FROM device_data WHERE user_id = ?;`, [user.id], function (error, results) {
+                if (error) {
+                    console.log('SELECT * FROM device_data error');
+                    console.log(error);
+                    return;
+                }
+                console.log(results);
+                let clientSocket = io.sockets.connected[socket.id];
+                clientSocket.emit("Send_Coord", results);
+                //frontend.emit('Send_Coord', results)
+            });
         });
     })
 
