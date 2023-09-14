@@ -304,7 +304,7 @@ frontend.on('connection', socket => {
     })
     socket.on('request_data_all', request_data => {
         //Application과 Frontend에 현재 상태 DB 넘기기
-        const { accesstoken } = login_data;
+        const { accesstoken } = request_data;
         jwt.verify(accesstoken, process.env.ACCESS_TOKEN_SECRET, (error, user) => {
             if (error) {
                 console.log(error);
