@@ -316,8 +316,7 @@ frontend.on('connection', socket => {
                     return;
                 }
                 console.log(results);
-                let clientSocket = io.sockets.connected[socket.id];
-                clientSocket.emit("Send_Coord", results);
+                io.to(socket.id).emit('Send_Coord', results);
                 //frontend.emit('Send_Coord', results)
             });
         });
