@@ -167,7 +167,7 @@ app.post("/add_device", authenticateAccessToken, (req, res) => {
             connection.query(`INSERT INTO device_data (user_id, name, device_no, latitude, longitude, device_type, curr_status) VALUES (?, ?, ?, ?, ?, ?, ?);`, [user_id, name, device_no, latitude, longitude, device_type, "0"], (error, results) => {
                 if (error) {
                     console.log('INSERT INTO device_data error:');
-                    //console.log(error);
+                    console.log(error);
                     res.status(400).send('장치 추가 실패');
                     return;
                 }
