@@ -129,6 +129,27 @@ app.post("/login", (req, res) => {
     });
 });
 
+// access token의 유효성 검사
+const authenticateAccessToken = (req, res, next) => {
+    let authHeader = req.headers["authorization"];
+    let token = authHeader && authHeader.split(" ")[1];
+
+    if (!token) {
+        console.log("wrong token format or token is not sended");
+        return res.sendStatus(400);
+    }
+
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, user) => {
+        if (error) {
+            console.log(error);
+            return res.sendStatus(403);
+        }
+
+        req.user = user;
+        next();
+    });
+};
+
 // 장치 추가
 app.post("/add_device", authenticateAccessToken, (req, res) => {
     let user_id = req.body.user_id;
@@ -205,27 +226,6 @@ app.post("/move_device", authenticateAccessToken, (req, res) => {
         res.status(200).send('장치 위치 변경 성공');
     });
 });
-
-// access token의 유효성 검사
-const authenticateAccessToken = (req, res, next) => {
-    let authHeader = req.headers["authorization"];
-    let token = authHeader && authHeader.split(" ")[1];
-
-    if (!token) {
-        console.log("wrong token format or token is not sended");
-        return res.sendStatus(400);
-    }
-
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, user) => {
-        if (error) {
-            console.log(error);
-            return res.sendStatus(403);
-        }
-
-        req.user = user;
-        next();
-    });
-};
 
 // access token을 refresh token 기반으로 재발급
 app.post("/refresh", (req, res) => {
