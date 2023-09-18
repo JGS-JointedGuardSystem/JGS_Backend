@@ -21,7 +21,9 @@ const app = express();
 const http_port = 80
 const https_port = 443
 
-app.use(cors())
+app.use(cors({
+    origin: '*',
+}));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
