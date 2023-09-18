@@ -280,13 +280,14 @@ io.on('connection', socket => {
     })
 })
 
-frontend.on('connection', socket => {
+frontend.on('connection', socket => {   
     console.log('Socket.IO Connected(frontend):', socket.id)
     socket.on('Socket_login', login_data => {
         const { accesstoken, user_id } = login_data;
         jwt.verify(accesstoken, process.env.ACCESS_TOKEN_SECRET, (error, user) => {
             if (error) {
                 console.log(error);
+                return;
             }
             console.log(user_id);
             console.log(",");
@@ -308,6 +309,7 @@ frontend.on('connection', socket => {
         jwt.verify(accesstoken, process.env.ACCESS_TOKEN_SECRET, (error, user) => {
             if (error) {
                 console.log(error);
+                return;
             }
             connection.query(`SELECT * FROM device_data WHERE user_id = ?;`, [user.id], function (error, results) {
                 if (error) {
