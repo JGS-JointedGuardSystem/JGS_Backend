@@ -228,6 +228,25 @@ app.post("/move_device", authenticateAccessToken, (req, res) => {
     });
 });
 
+// 비밀번호 검증
+app.post("/pw_conf", authenticateAccessToken, (req, res) => {
+    let passwd = req.body.pw;
+    connection.query(`SELECT id FROM user WHERE id = ? AND pw = ?;`, [req.user.id, passwd], function (error, results) {
+        if (error) {
+            console.log('no matching user blyat');
+            console.log(error);
+        }
+        console.log(results);
+        if (results.length < 1) {
+            res.status(400).send('비밀번호 검증 실패');
+        }
+        else {
+            res.status(200).send('비밀번호 검증 성공');
+        }
+
+    });
+});
+
 // access token을 refresh token 기반으로 재발급
 app.post("/refresh", (req, res) => {
     let refreshToken = req.body.refreshToken;
