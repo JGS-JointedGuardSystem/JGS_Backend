@@ -311,18 +311,14 @@ frontend.on('connection', socket => {
                 console.log(error);
                 return;
             }
-            console.log(user_id);
-            console.log(",");
-            console.log(user);
-            if (user.id == user_id) {
-                connection.query(`INSERT INTO user_socketid (user_id, socket_id) VALUES (?,?);`, [user_id, socket.id], (insert_error, insert_results) => {
+            console.log(user.id);
+                connection.query(`INSERT INTO user_socketid (user_id, socket_id) VALUES (?,?);`, [user.id, socket.id], (insert_error, insert_results) => {
                     if (insert_error) {
                         console.log(insert_error);
                         return;
                     }
                     console.log(insert_results);
                 });
-            }
         });
     })
     socket.on('request_data_all', request_data => {
