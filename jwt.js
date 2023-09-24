@@ -275,9 +275,10 @@ io.on('connection', socket => {
     console.log('Socket.IO Connected(Embedded):', socket.id)
     socket.on('Alert', Alert_data => {
         const { user_id, device_no } = Alert_data;
+        console.log('Alert:'+user_id+'|'+device_no)
         connection.query(`SELECT socket_id FROM user_socketid WHERE user_id = ?;`, [user_id], function (error, results_id) {
             if (error) {
-                console.log(error);
+                console.log(error); 
             }
             connection.query(`SELECT name,latitude,longitude,device_type FROM device_data WHERE user_id= ? AND device_no= ?;`, [user_id, device_no], function (error, results) {
                 console.log(results);
@@ -297,7 +298,7 @@ io.on('connection', socket => {
     })
     socket.on('test_func', test_data => {
         const { user_id, device_no } = test_data;
-
+        console.log('TEST:'+user_id+'|'+device_no)
     })
 })
 
